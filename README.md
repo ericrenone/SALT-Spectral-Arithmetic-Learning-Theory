@@ -1,4 +1,4 @@
-# Spectral-Arithmetic Learning Theory (SALT)
+# (SALT) - Spectral-Arithmetic Learning Theory
 
 
 > *Every gradient trajectory is a word in a free monoid.
