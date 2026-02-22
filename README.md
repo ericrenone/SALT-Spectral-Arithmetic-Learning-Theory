@@ -3,7 +3,7 @@
 > *"Does arithmetic structure precede grokking under fixed-point quantization constraints?"*
 
 
-### Why software results are invalid for this question
+### Why software results are invalid for this question:
 
 Every execution path — NumPy, SciPy, PyTorch, a Q.16 emulator, a CORDIC
 emulator — runs on a CPU or GPU. Those processors execute in **IEEE 754 float64 arithmetic**.
