@@ -76,7 +76,7 @@ HLS-generated Q.16 MAC array and a CORDIC core at 16–24 iterations.
 
 ### Recommended path
 
-The only scientifically valid path to answer this question is a **university lab partnership**
+The only valid path to answer this question is a **university lab partnership**
 with an ECE or computer architecture group that has:
 
 - FPGA or ASIC infrastructure
