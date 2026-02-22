@@ -86,37 +86,6 @@ with an ECE or computer architecture group that has:
 
 ---
 
-## Summary
-
-| Question | Can this code answer it? |
-|---|---|
-| Does SALT hold in float32? | Yes — run `--mode full` |
-| Does SALT hold on Q.16 hardware? | **No. Requires physical fixed-point silicon.** |
-| Does a Q.16 emulator answer the hardware question? | **No. Emulators run on float64 CPUs/GPUs.** |
-| What would valid results require? | FPGA/ASIC lab, CORDIC core, fixed-point BLAS, hardware logging |
-| What is the right next step? | University ECE/architecture lab partnership |
-
----
-
-## Quick Start
-
-```bash
-# Run all 7 demo scenarios (saves plots to ./salt_demo_output/)
-python salt_demo.py
-
-# Run a specific scenario
-python salt_demo.py --scenario grokking
-python salt_demo.py --scenario jordan
-python salt_demo.py --scenario live --show
-
-# Run the 64-test suite
-python salt_tests.py
-```
-
-**Dependencies:** `numpy`, `scipy`, `matplotlib` — no GPU, no deep learning framework required.
-
----
-
 ## Files
 
 | File | Description |
