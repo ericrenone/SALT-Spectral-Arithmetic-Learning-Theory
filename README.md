@@ -1,5 +1,7 @@
 # SALT — Spectral-Arithmetic Learning Theory
 
+> does arithmetic structure precede grokking under fixed-point quantization constraints?
+
 ---
 
 ## Quick Start
