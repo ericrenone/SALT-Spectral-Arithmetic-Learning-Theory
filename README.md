@@ -1,6 +1,100 @@
 # SALT — Spectral-Arithmetic Learning Theory
 
-> does arithmetic structure precede grokking under fixed-point quantization constraints?
+> *"Does arithmetic structure precede grokking under fixed-point quantization constraints?"*
+
+
+### Why software results are invalid for this question
+
+Every execution path — NumPy, SciPy, PyTorch, a Q.16 emulator, a CORDIC
+emulator — runs on a CPU or GPU. Those processors execute in **IEEE 754 float64 arithmetic**.
+
+```
+What you think you are running:
+  Q.16 fixed-point training → Q.16 CORDIC log → Q.16 gradient → T_arith
+
+What you are actually running:
+  float64 simulation of Q.16 → float64 simulation of CORDIC → float64 gradient → T_arith
+
+These are not the same thing.
+```
+
+The SALT observables are all affected:
+
+| Observable | Why float64 ≠ fixed-point silicon |
+|---|---|
+| `C_α` (power-law slope) | Computed via `log` — on hardware this is a CORDIC approximation with finite iteration error. float64 `log` is exact to 15 decimal places. The power-law slope is a *different function* on real hardware. |
+| `entropy H` | Shannon entropy requires `p·log(p)`. CORDIC log error is non-uniform across the probability range — small probabilities are computed less accurately. float64 has no such structure. |
+| `denominator` (FFT) | Fixed-point FFT has a quantization noise floor that creates spurious spectral peaks. float64 FFT does not. The dominant frequency — and therefore T_arith — will differ. |
+| `T_grok` | Grokking onset is sensitive to the loss landscape. Q.16 weight updates truncate/saturate every step, permanently altering the trajectory. float64 updates are lossless. |
+| `ΔT = T_grok − T_arith` | Both endpoints are wrong. The difference is doubly wrong. |
+
+### The emulator trap
+
+It is tempting to write a Q.16 emulator in Python:
+
+```python
+def q16_multiply(a, b):
+    result = (int(a * 65536) * int(b * 65536)) >> 16
+    return max(-32768, min(32767, result))  # saturate
+```
+
+This is still running on float64 hardware. The integer arithmetic is simulated inside a
+float64 register. The saturation is a conditional branch, not an electrical clamp. The
+rounding is a software rule, not a transistor behavior. The accumulator width is Python's
+arbitrary-precision integer, not a 32-bit or 40-bit hardware accumulator.
+
+A CORDIC emulator has the same problem:
+
+```
+CORDIC emulator runs on  →  CPU/GPU  →  which is float64 under the hood
+Q.16 emulator runs on    →  CPU/GPU  →  which is float64 under the hood
+
+You are simulating fixed-point behavior using floating-point arithmetic.
+It is not the same thing.
+```
+
+The quantization noise in real silicon is **structural** — it emerges from the physical
+bit-width of the datapath and propagates deterministically through every operation. A
+software simulation adds noise as a post-hoc approximation. The two noise processes have
+different statistical properties, different frequency content, and different effects on
+gradient dynamics.
+
+### What valid results require
+
+To answer the research question with scientific validity:
+
+| Requirement | Why |
+|---|---|
+| **FPGA or ASIC with Q.16 datapath** | Bit-identical arithmetic to target hardware |
+| **CORDIC core** (hardware, not emulated) | Softmax, entropy, log — all need CORDIC on fixed-point substrate |
+| **Fixed-point BLAS / LAGREBA** | Matrix multiply and gradient accumulation at correct accumulator width |
+| **Cycle-accurate logging** | T_grok and T_arith must be measured at hardware clock resolution |
+| **Bit-identical software reference** | For debugging only — not for results |
+
+Minimum viable hardware: **Xilinx Ultrascale+ or Intel Agilex FPGA** with a custom or
+HLS-generated Q.16 MAC array and a CORDIC core at 16–24 iterations.
+
+### Recommended path
+
+The only scientifically valid path to answer this question is a **university lab partnership**
+with an ECE or computer architecture group that has:
+
+- FPGA or ASIC infrastructure
+- Fixed-point toolchains (Vivado HLS, Cadence, Synopsys)
+- Experience with neuromorphic or efficient ML hardware
+
+
+---
+
+## Summary
+
+| Question | Can this code answer it? |
+|---|---|
+| Does SALT hold in float32? | Yes — run `--mode full` |
+| Does SALT hold on Q.16 hardware? | **No. Requires physical fixed-point silicon.** |
+| Does a Q.16 emulator answer the hardware question? | **No. Emulators run on float64 CPUs/GPUs.** |
+| What would valid results require? | FPGA/ASIC lab, CORDIC core, fixed-point BLAS, hardware logging |
+| What is the right next step? | University ECE/architecture lab partnership |
 
 ---
 
